@@ -1,13 +1,15 @@
-import Button from '@/components/atoms/button';
-import Input from '@/components/atoms/form/input';
-import Table from '@/components/atoms/table';
-import Admin from '@/components/layouts/admin';
+import Link from 'next/link';
 import UserType from '@/model/user';
+import Table from '@/components/atoms/table';
+import Button from '@/components/atoms/button';
+import Admin from '@/components/layouts/admin';
+import Input from '@/components/atoms/form/input';
+import useDebounce from '@/app/hooks/useDebounce';
+
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { getUserlist } from '@/services/user';
 import { PencilIcon, TrashIcon } from '@heroicons/react/solid';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
 
 interface Index {}
 
@@ -18,14 +20,20 @@ const Index: React.FC<Index> = () => {
   const [pageMeta, setPageMeta] = useState({});
 
   const router = useRouter();
+  const debounceValue = useDebounce(search, 500);
 
   const deleteData = async (id: number) => {};
 
   const getData = async (signal: AbortSignal) => {
-    const result = await getUserlist(signal, search);
-    console.log(result);
+    const result = await getUserlist(signal, debounceValue);
 
     setUser(result.data);
+    setPageMeta({
+      total: result.total,
+      perPage: result.per_page,
+      lastPage: result.last_page,
+      currentPage: result.current_page,
+    });
     setLoading(false);
   };
 
@@ -37,15 +45,15 @@ const Index: React.FC<Index> = () => {
       setUser([]);
       controller.abort();
     };
-  }, []);
+  }, [debounceValue]);
 
   return (
     <Admin loading={loading}>
       <div className='flex flex-col sm:flex-row space-y-3 sm:space-y-0 justify-between mb-5 sm:items-center sm:content-center'>
         <Button
-          title='Create new quiz'
+          title='Create new user'
           onClick={() => {
-            router.push('/quiz/create');
+            router.push('/user/create');
           }}
         />
         <Input
@@ -53,7 +61,7 @@ const Index: React.FC<Index> = () => {
           type='search'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder='Search quiz here'
+          placeholder='Search user here'
         />
       </div>
       <Table>

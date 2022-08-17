@@ -1,4 +1,4 @@
-type UserType = {
+interface UserType {
   id?: number;
   name: string;
   email?: string;
@@ -9,22 +9,23 @@ type UserType = {
   created_at?: string;
   updated_at?: string;
   image?: string;
-};
+}
 
-export type RegisterUser = {
+export interface CreateUser {
   name: string;
   email: string;
   password: string;
   passwordConfirmation: string;
+  level?: string;
   image: File | null;
-};
+}
 
-export type UserError = {
+export interface UserErrorType {
   name?: string;
   email?: string;
   password?: string;
   passwordConfirmation?: string;
   image?: string;
-};
+}
 
 export default UserType;

@@ -35,14 +35,6 @@ export const getHiddenAnswerQuiz = async (quiz_id: number) => {
 const toFormData = (quiz: QuizFormType) => {
   const { name, time, description, image, questions } = quiz;
 
-  console.log('====================================');
-  console.log(name);
-  console.log(time);
-  console.log(description);
-  console.log(image);
-  console.log(questions);
-  console.log('====================================');
-
   const form = new FormData();
   form.append('name', name);
   form.append('time', time.toString());

@@ -18,11 +18,11 @@ const ImagePicker: React.FC<ImagePicker> = ({
   return (
     <div className={className}>
       <div
-        className={`hover:opacity-50 rounded-md border border-gray-300 p-3 h-56 overflow-hidden`}
+        className={`hover:opacity-50 rounded-md border border-gray-300 p-3 h-56 overflow-hidden w-full`}
       >
         <label
           htmlFor='image'
-          className='flex flex-col justify-center space-y-5 items-center w-full h-full prose'
+          className='flex flex-col justify-center space-y-5 items-center w-full h-full'
         >
           {value || image.length > 0 ? (
             <img
@@ -32,7 +32,9 @@ const ImagePicker: React.FC<ImagePicker> = ({
           ) : (
             <>
               <DownloadIcon className='sm:w-1/12 text-gray-500' />
-              <h2 className='text-gray-500 text-center'>Upload quiz image</h2>
+              <h2 className='text-gray-500 text-center text-2xl font-semibold'>
+                Upload quiz image
+              </h2>
             </>
           )}
         </label>

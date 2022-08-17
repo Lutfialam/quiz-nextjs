@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import instance from '@/services/instance';
-import { RegisterUser } from '@/model/user';
+import { CreateUser } from '@/model/user';
 
 export const login = async (user: { email: string; password: string }) => {
   let data: any = {};
@@ -15,7 +15,7 @@ export const login = async (user: { email: string; password: string }) => {
   return data;
 };
 
-export const register = async (user: RegisterUser) => {
+export const register = async (user: CreateUser) => {
   let data: any = {};
   const form = new FormData();
 

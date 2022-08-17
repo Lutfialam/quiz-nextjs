@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { register } from '@/services/auth';
-import { RegisterUser, UserError } from '@/model/user';
+import { CreateUser, UserErrorType } from '@/model/user';
 
 import Guest from '@/components/layouts/guest';
 import Button from '@/components/atoms/button';
@@ -13,14 +13,14 @@ interface Register {}
 const Register: React.FC<Register> = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<RegisterUser>({
+  const [data, setData] = useState<CreateUser>({
     name: '',
     email: '',
     password: '',
     passwordConfirmation: '',
     image: null,
   });
-  const [dataError, setDataError] = useState<UserError>({
+  const [dataError, setDataError] = useState<UserErrorType>({
     name: '',
     email: '',
     password: '',
