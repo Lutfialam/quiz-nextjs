@@ -8,7 +8,6 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { getQuizById, updateQuiz } from '@/services/quiz';
 import { quizCreateValidation } from '@/features/quiz/validation';
 
-import Swal from 'sweetalert2';
 import Admin from '@/components/layouts/admin';
 import Button from '@/components/atoms/button';
 import Input from '@/components/atoms/form/input';
@@ -26,8 +25,8 @@ import {
   setCategory,
   setSelectedCategory,
   removeQuestion as removeQuest,
+  resetQuizEdit,
 } from '@/features/quiz/quizEditSlice';
-import { AlertType } from '@/components/atoms/alert';
 
 const Update = () => {
   const [loading, setLoading] = useState(true);
@@ -67,19 +66,13 @@ const Update = () => {
       setLoading(true);
       const result = await updateQuiz(quiz, deletedQuestion);
 
-      if (result.errors) {
-        error = { ...result.errors };
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
       if (result.status == 'success') {
-        const message: AlertType = {
-          status: 'success',
-          message: `Quiz ${quiz.name} is updated!`,
-        };
-        dispatch(setAlert(message));
+        dispatch(setAlert({ message: `Quiz ${quiz.name} is updated!` }));
         router.push('/quiz');
       }
+
+      error = { ...(result.errors ?? {}) };
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setLoading(false);
     }
 
@@ -102,20 +95,19 @@ const Update = () => {
   const getData = async () => {
     const result = await getQuizById(parseInt(id as string));
 
-    const { categories } = result;
+    const quizCategory = {
+      id: result.categories.id,
+      value: result.categories.name,
+    };
+
     dispatch(setQuizEdit(result));
-    dispatch(
-      setSelectedCategory({ id: categories.id, value: categories.name })
-    );
+    dispatch(setSelectedCategory(quizCategory));
     setLoading(false);
   };
 
   const removeQuestion = (index: number) => {
     confirmation((isConfirmed) => {
-      if (isConfirmed) {
-        dispatch(removeQuest(index));
-        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
-      }
+      if (isConfirmed) dispatch(removeQuest(index));
     });
   };
 
@@ -123,13 +115,10 @@ const Update = () => {
     const controller = new AbortController();
     const { signal } = controller;
 
-    if (id) {
-      getData();
-      getCategoryList(signal);
-    }
+    if (id) getData(), getCategoryList(signal);
 
     return () => {
-      dispatch(setQuiz({} as EditQuizType));
+      dispatch(resetQuizEdit());
       controller.abort();
     };
   }, [id, debounceSearch]);

@@ -1,7 +1,7 @@
 export interface AlertType {
   message: string;
   className?: string;
-  status: 'success' | 'failed' | 'info';
+  status?: 'success' | 'failed' | 'info';
 }
 
 const Alert: React.FC<AlertType> = ({
