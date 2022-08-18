@@ -1,13 +1,14 @@
+import { RootState } from '@/app/store';
 import { useRouter } from 'next/router';
-import { useDispatch } from 'react-redux';
+import { EditQuizType } from '@/model/quiz';
 import { getCategory } from '@/services/category';
+import { useDispatch, useSelector } from 'react-redux';
 import { setAlert } from '@/features/alert/alertSlice';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { getQuizById, updateQuiz } from '@/services/quiz';
-import { QuizFormType, QuizTypeError } from '@/model/quiz';
 import { quizCreateValidation } from '@/features/quiz/validation';
 
-import CategoryType from '@/model/category';
+import Swal from 'sweetalert2';
 import Admin from '@/components/layouts/admin';
 import Button from '@/components/atoms/button';
 import Input from '@/components/atoms/form/input';
@@ -16,35 +17,34 @@ import Select from '@/components/atoms/form/select';
 import TextArea from '@/components/atoms/form/textArea';
 import ImagePicker from '@/components/atoms/imagePicker';
 import SelectSearch from '@/components/atoms/form/selectSearch';
-import QuestionType, { QuestionTypeError } from '@/model/question';
+import confirmation from '@/app/utils/alert/confirmation';
+import {
+  setQuiz,
+  addQuestion as addQuest,
+  setQuizError,
+  setQuizEdit,
+  setCategory,
+  setSelectedCategory,
+  removeQuestion as removeQuest,
+} from '@/features/quiz/quizEditSlice';
+import { AlertType } from '@/components/atoms/alert';
 
-interface Update {}
-interface SearchType {
-  id: number;
-  value: string;
-}
-
-const Update: React.FC<Update> = () => {
+const Update = () => {
   const [loading, setLoading] = useState(true);
   const [searchCategory, setSearchCategory] = useState('');
   const [loadingCategory, setLoadingCategory] = useState(true);
-  const [category, setCategory] = useState<SearchType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<SearchType>(
-    {} as SearchType
-  );
-  const [quiz, setQuiz] = useState<QuizFormType>({} as QuizFormType);
-  const [quizError, setQuizError] = useState<QuizTypeError>(
-    {} as QuizTypeError
-  );
 
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch();
   const debounceSearch = useDebounce(searchCategory, 500);
 
+  const { quiz, quizError, category, deletedQuestion, selectedCategory } =
+    useSelector((state: RootState) => state.quizEdit);
+
   const onChange = (e: ChangeEvent) => {
     let { name, value, files } = e.currentTarget as HTMLInputElement;
-    setQuiz({ ...quiz, [name]: files ? files[0] : value });
+    dispatch(setQuiz({ ...quiz, [name]: files ? files[0] : value }));
   };
 
   const onQuestChange = (e: ChangeEvent, index: number) => {
@@ -57,31 +57,7 @@ const Update: React.FC<Update> = () => {
       return item;
     });
 
-    setQuiz({ ...quiz, questions: question });
-  };
-
-  const addQuestion = () => {
-    const index = quiz.questions?.length;
-
-    const question = {
-      index,
-      answer: '',
-      question: '',
-      first_choice: '',
-      second_choice: '',
-      third_choice: '',
-      fourth_choice: '',
-    };
-
-    setQuiz({
-      ...quiz,
-      questions: [...(quiz.questions ?? []), { ...question, answer: 'A' }],
-    });
-
-    setQuizError({
-      ...quizError,
-      questions: [...(quizError.questions ?? []), { ...question }],
-    });
+    dispatch(setQuiz({ ...quiz, questions: question }));
   };
 
   const submit = async () => {
@@ -89,7 +65,7 @@ const Update: React.FC<Update> = () => {
 
     if (isValidated) {
       setLoading(true);
-      const result = await updateQuiz(quiz);
+      const result = await updateQuiz(quiz, deletedQuestion);
 
       if (result.errors) {
         error = { ...result.errors };
@@ -97,104 +73,65 @@ const Update: React.FC<Update> = () => {
       }
 
       if (result.status == 'success') {
-        dispatch(
-          setAlert({
-            status: 'success',
-            message: `Quiz ${quiz.name} is updated!`,
-          })
-        );
+        const message: AlertType = {
+          status: 'success',
+          message: `Quiz ${quiz.name} is updated!`,
+        };
+        dispatch(setAlert(message));
         router.push('/quiz');
       }
       setLoading(false);
     }
-    setQuizError({ ...quizError, ...error });
+
+    dispatch(setQuizError({ ...quizError, ...error }));
   };
 
-  const getCategoryList = async () => {
+  const getCategoryList = async (signal: AbortSignal) => {
     setLoadingCategory(true);
     const search = category.filter((cat) =>
       cat.value.toLowerCase().includes(debounceSearch.toLowerCase())
     );
 
     if (search.length <= 0) {
-      const result = await getCategory(debounceSearch);
-      const categoryList = result.data.map((item: CategoryType) => {
-        return {
-          id: item.id,
-          value: item.name,
-        };
-      });
-
-      setCategory(categoryList);
+      const result = await getCategory(signal, debounceSearch);
+      dispatch(setCategory(result.data));
     }
     setLoadingCategory(false);
-  };
-
-  const setQuestion = (questions: QuestionType[]) => {
-    const quest: QuestionType[] = [];
-    const questError: QuestionTypeError[] = [];
-    questions.map((item: QuestionType, idx: number) => {
-      quest.push({
-        index: idx,
-        id: item.id,
-        answer: item.answer,
-        question: item.question,
-        first_choice: item.first_choice,
-        second_choice: item.second_choice,
-        third_choice: item.third_choice,
-        fourth_choice: item.fourth_choice,
-      });
-      questError.push({
-        index: idx,
-        id: item.id,
-        answer: '',
-        question: '',
-        first_choice: '',
-        second_choice: '',
-        third_choice: '',
-        fourth_choice: '',
-      });
-    });
-    return { quest, questError };
   };
 
   const getData = async () => {
     const result = await getQuizById(parseInt(id as string));
 
-    const { questions, categories } = result;
-    const { quest, questError } = setQuestion(questions);
-
-    setQuiz({
-      id: result.id,
-      name: result.name,
-      time: result.time,
-      description: result.description,
-      category_id: result.categories.id,
-      questions: quest,
-      image:
-        result.image != 'default.png'
-          ? `${process.env.NEXT_PUBLIC_API_URL}/images/${result.image}`
-          : undefined,
-    });
-
-    setQuizError({
-      name: '',
-      time: '',
-      image: '',
-      category: '',
-      description: '',
-      questions: questError,
-    });
-
-    setSelectedCategory({ id: categories.id, value: categories.name });
+    const { categories } = result;
+    dispatch(setQuizEdit(result));
+    dispatch(
+      setSelectedCategory({ id: categories.id, value: categories.name })
+    );
     setLoading(false);
   };
 
+  const removeQuestion = (index: number) => {
+    confirmation((isConfirmed) => {
+      if (isConfirmed) {
+        dispatch(removeQuest(index));
+        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+      }
+    });
+  };
+
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     if (id) {
       getData();
-      getCategoryList();
+      getCategoryList(signal);
     }
+
+    return () => {
+      dispatch(setQuiz({} as EditQuizType));
+      controller.abort();
+    };
   }, [id, debounceSearch]);
 
   return (
@@ -268,7 +205,7 @@ const Update: React.FC<Update> = () => {
                 rounded
                 title='Add question'
                 onClick={() => {
-                  addQuestion();
+                  dispatch(addQuest());
                 }}
               />
             </div>
@@ -276,17 +213,22 @@ const Update: React.FC<Update> = () => {
 
           <div id='quiz_form'>
             {quiz.questions?.map((item, index) => {
-              return (
+              return !item.remove ? (
                 <div
                   className='hover:bg-gray-100 border-b-2 border-indigo-400'
                   key={index}
                 >
                   <div className='flex justify-between items-center sm:px-5 pt-5'>
-                    <h1 className='text-xl'>Question {index + 1}</h1>
+                    <h1 className='text-xl'>
+                      Question {(item.index ?? 0) + 1}
+                    </h1>
                     <Button
-                      title='Remove this question'
-                      background='bg-red-500'
                       rounded
+                      background='bg-red-500'
+                      title='Remove this question'
+                      onClick={() => {
+                        removeQuestion(item.index as number);
+                      }}
                     />
                   </div>
                   <div className='flex flex-col mb-5 p-2 sm:p-5'>
@@ -366,7 +308,7 @@ const Update: React.FC<Update> = () => {
                     </div>
                   </div>
                 </div>
-              );
+              ) : null;
             })}
           </div>
           <div className='w-full flex justify-between mt-5 items-center'>

@@ -1,26 +1,34 @@
-import QuestionType, { QuestionTypeError } from '@/model/question';
+import QuestionType, {
+  EditQuestionType,
+  QuestionTypeError,
+} from '@/model/question';
 import CategoryType from './category';
 
-interface QuizType {
+interface BaseQuiz {
   id?: number;
   name?: string;
   time?: number;
   image?: File | string;
+  description?: string;
+}
+
+interface QuizType extends BaseQuiz {
   questions?: QuestionType[];
   categories?: CategoryType;
-  description?: string;
   created_at?: string;
   updated_at?: string;
 }
 
-export interface QuizFormType {
-  id?: number;
-  name: string;
-  time: number;
+export interface CreateQuizType extends BaseQuiz {
   category_id: number;
-  image?: File | string;
   questions: QuestionType[];
+}
+
+export interface EditQuizType extends BaseQuiz {
+  delete?: boolean;
   description?: string;
+  category_id: number;
+  questions: EditQuestionType[];
 }
 
 export interface QuizTypeError {
@@ -28,8 +36,8 @@ export interface QuizTypeError {
   time?: string;
   image?: string;
   category?: string;
-  questions?: QuestionTypeError[];
   description?: string;
+  questions?: QuestionTypeError[];
 }
 
 export default QuizType;

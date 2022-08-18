@@ -1,4 +1,4 @@
-import QuizType, { QuizFormType } from '@/model/quiz';
+import QuizType, { CreateQuizType, EditQuizType } from '@/model/quiz';
 import instance from '@/services/instance';
 
 export const getQuiz = async (search?: string, page?: number) => {
@@ -32,12 +32,12 @@ export const getHiddenAnswerQuiz = async (quiz_id: number) => {
   return data;
 };
 
-const toFormData = (quiz: QuizFormType) => {
+const toFormData = (quiz: CreateQuizType) => {
   const { name, time, description, image, questions } = quiz;
 
   const form = new FormData();
-  form.append('name', name);
-  form.append('time', time.toString());
+  form.append('name', name as string);
+  form.append('time', (time as number).toString());
   form.append('questions', JSON.stringify(questions));
   form.append('category_id', quiz.category_id.toString());
 
@@ -47,7 +47,7 @@ const toFormData = (quiz: QuizFormType) => {
   return form;
 };
 
-export const addQuiz = async (quiz: QuizFormType) => {
+export const addQuiz = async (quiz: CreateQuizType) => {
   const form = toFormData(quiz);
   instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
 
@@ -60,9 +60,14 @@ export const addQuiz = async (quiz: QuizFormType) => {
   return data;
 };
 
-export const updateQuiz = async (quiz: QuizFormType) => {
+export const updateQuiz = async (quiz: EditQuizType, deleted: number[]) => {
+  console.log('====================================');
+  console.log(quiz);
+  console.log(deleted);
+  console.log('====================================');
   const form = toFormData(quiz);
   form.append('_method', 'PUT');
+  form.append('deleted_question', JSON.stringify(deleted));
 
   instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
 

@@ -12,6 +12,10 @@ interface QuestionType {
   updated_at?: string;
 }
 
+export interface EditQuestionType extends QuestionType {
+  remove?: boolean;
+}
+
 export interface QuestionTypeError {
   id?: number;
   index?: number;

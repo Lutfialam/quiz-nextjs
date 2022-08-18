@@ -5,7 +5,7 @@ import Admin from '@/components/layouts/admin';
 import Input from '@/components/atoms/form/input';
 import TextArea from '@/components/atoms/form/textArea';
 import { quizCreateValidation } from '@/features/quiz/validation';
-import { QuizFormType, QuizTypeError } from '@/model/quiz';
+import { CreateQuizType, QuizTypeError } from '@/model/quiz';
 import { useEffect, useState } from 'react';
 import { addQuiz } from '@/services/quiz';
 import { getCategory } from '@/services/category';
@@ -31,7 +31,7 @@ const Create: React.FC<Create> = () => {
     {} as SearchType
   );
 
-  const [quiz, setQuiz] = useState<QuizFormType>({} as QuizFormType);
+  const [quiz, setQuiz] = useState<CreateQuizType>({} as CreateQuizType);
   const [quizError, setQuizError] = useState<QuizTypeError>(
     {} as QuizTypeError
   );
@@ -75,7 +75,7 @@ const Create: React.FC<Create> = () => {
       category_id: quiz.category_id,
       description: quiz.description,
       questions: [
-        ...quiz.questions,
+        ...(quiz.questions ?? []),
         {
           ...question,
           answer: 'A',
@@ -114,14 +114,14 @@ const Create: React.FC<Create> = () => {
     setQuizError(error);
   };
 
-  const getCategoryList = async () => {
+  const getCategoryList = async (signal: AbortSignal) => {
     setLoadingCategory(true);
     const search = category.filter((cat) =>
       cat.value.toLowerCase().includes(debounceSearch.toLowerCase())
     );
 
     if (search.length <= 0) {
-      const result = await getCategory(debounceSearch);
+      const result = await getCategory(signal, debounceSearch);
       const categoryList = result.data.map((item: CategoryType) => {
         return {
           id: item.id,
@@ -134,12 +134,29 @@ const Create: React.FC<Create> = () => {
     setLoadingCategory(false);
   };
 
+  const removeQuestion = (id: number) => {
+    const newQuestion = quiz.questions.filter((item) => item.id !== id);
+    const newQuestionError = quizError.questions?.filter(
+      (item) => item.id !== id
+    );
+    setQuiz({ ...quiz, questions: newQuestion });
+    setQuizError({ ...quizError, questions: newQuestionError });
+  };
+
   useEffect(() => {
-    getCategoryList();
-    if (quiz.questions.length <= 0) {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    getCategoryList(signal);
+    if (quiz.questions?.length <= 0) {
       addQuestion();
     }
     setLoading(false);
+
+    return () => {
+      setLoading(true);
+      controller.abort();
+    };
   }, [debounceSearch]);
 
   return (
@@ -226,6 +243,9 @@ const Create: React.FC<Create> = () => {
                   <div className='flex justify-between items-center sm:px-5 pt-5'>
                     <h1 className='text-xl'>Question {index + 1}</h1>
                     <Button
+                      onClick={() => {
+                        removeQuestion(item.id ?? 1);
+                      }}
                       title='Remove this question'
                       background='bg-red-500'
                       rounded

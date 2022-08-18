@@ -1,12 +1,12 @@
 import QuestionType, { QuestionTypeError } from '@/model/question';
-import { QuizFormType, QuizTypeError } from '@/model/quiz';
+import { CreateQuizType, QuizTypeError } from '@/model/quiz';
 
 const isNotEmpty = (value?: string) => {
   return value && value.length > 0;
 };
 
 export const quizCreateValidation = (
-  quiz: QuizFormType,
+  quiz: CreateQuizType,
   quizError: QuizTypeError
 ) => {
   let isValidated = true;
