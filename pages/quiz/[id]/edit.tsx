@@ -1,6 +1,5 @@
 import { RootState } from '@/app/store';
 import { useRouter } from 'next/router';
-import { EditQuizType } from '@/model/quiz';
 import { getCategory } from '@/services/category';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAlert } from '@/features/alert/alertSlice';
@@ -17,6 +16,7 @@ import TextArea from '@/components/atoms/form/textArea';
 import ImagePicker from '@/components/atoms/imagePicker';
 import SelectSearch from '@/components/atoms/form/selectSearch';
 import confirmation from '@/app/utils/alert/confirmation';
+
 import {
   setQuiz,
   addQuestion as addQuest,
