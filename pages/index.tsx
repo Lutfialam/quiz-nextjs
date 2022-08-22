@@ -4,6 +4,7 @@ import Image from 'next/image';
 import styles from '../styles/Home.module.css';
 import undrawHome from '@/public/images/undraw_home.svg';
 import undrawMobile from '@/public/images/undraw_mobile.svg';
+import Link from 'next/link';
 const Home: NextPage = () => {
   return (
     <div className={styles.container}>
@@ -24,18 +25,16 @@ const Home: NextPage = () => {
               exercitationem earum, corporis est adipisci.
             </p>
             <div className='my-5 flex'>
-              <a
-                href='/auth/login'
-                className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'
-              >
-                Login
-              </a>
-              <a
-                href='/auth/register'
-                className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'
-              >
-                Register
-              </a>
+              <Link href='/auth/login'>
+                <span className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'>
+                  Login
+                </span>
+              </Link>
+              <Link href='/auth/register'>
+                <span className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'>
+                  Register
+                </span>
+              </Link>
             </div>
           </div>
           <div className='hidden sm:w-5/12 sm:flex flex-col justify-center'>
