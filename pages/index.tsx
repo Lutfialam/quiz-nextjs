@@ -25,13 +25,13 @@ const Home: NextPage = () => {
             </p>
             <div className='my-5 flex'>
               <a
-                href='/auth/signin'
+                href='/auth/login'
                 className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'
               >
                 Login
               </a>
               <a
-                href='/auth/signup'
+                href='/auth/register'
                 className='bg-indigo-500 text-white py-2 mr-3 px-6 text-lg rounded-full no-underline'
               >
                 Register
