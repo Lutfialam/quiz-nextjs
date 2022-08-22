@@ -9,6 +9,7 @@ import Guest from '@/components/layouts/guest';
 import Button from '@/components/atoms/button';
 import Loading from '@/components/atoms/loading';
 import Input from '@/components/atoms/form/input';
+import Link from 'next/link';
 
 interface Credential {
   email: string;
@@ -106,9 +107,9 @@ const Login = () => {
         <div className='w-full flex justify-end py-3'>
           <p className='text-gray-600'>
             Not have an account?{' '}
-            <a href='/auth/register' className='text-indigo-500'>
-              Signup
-            </a>{' '}
+            <Link href='/auth/register'>
+              <span className='text-indigo-500'>Signup</span>
+            </Link>{' '}
             now
           </p>
         </div>

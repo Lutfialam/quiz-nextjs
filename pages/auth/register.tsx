@@ -7,6 +7,7 @@ import Guest from '@/components/layouts/guest';
 import Button from '@/components/atoms/button';
 import Input from '@/components/atoms/form/input';
 import { FileInput, Label } from 'flowbite-react';
+import Link from 'next/link';
 
 interface Register {}
 
@@ -133,9 +134,9 @@ const Register: React.FC<Register> = () => {
         <div className='w-full flex justify-end py-3'>
           <p className='text-gray-600'>
             Already have an account?{' '}
-            <a href='/auth/login' className='text-indigo-500'>
-              Login
-            </a>{' '}
+            <Link href='/auth/login'>
+              <span className='text-indigo-500'>Login</span>
+            </Link>{' '}
             now.
           </p>
         </div>
